@@ -2,15 +2,16 @@ package telran.java58.person.service;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import telran.java58.person.dao.PersonRepository;
-import telran.java58.person.dto.AddressDto;
-import telran.java58.person.dto.CityPopulationDto;
-import telran.java58.person.dto.PersonDto;
+import telran.java58.person.dto.*;
 import telran.java58.person.dto.exception.PersonExistsException;
 import telran.java58.person.dto.exception.PersonNotFoundException;
 import telran.java58.person.model.Address;
+import telran.java58.person.model.Child;
+import telran.java58.person.model.Employee;
 import telran.java58.person.model.Person;
 
 import java.time.LocalDate;
@@ -18,7 +19,7 @@ import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
-public class PersonServiceImpl implements PersonService {
+public class PersonServiceImpl implements PersonService, CommandLineRunner {
     private final PersonRepository personRepository;
     private final ModelMapper modelMapper;
 
@@ -28,12 +29,26 @@ public class PersonServiceImpl implements PersonService {
         if (personRepository.existsById(personDto.getId())) {
             throw new PersonExistsException();
         }
+        if (personDto instanceof EmployeeDto) {
+            personRepository.save(modelMapper.map(personDto, Employee.class));
+            return;
+        }
+        if (personDto instanceof ChildDto) {
+            personRepository.save(modelMapper.map(personDto, Child.class));
+            return;
+        }
         personRepository.save(modelMapper.map(personDto, Person.class));
     }
 
     @Override
     public PersonDto getPerson(int id) {
         Person person = personRepository.findById(id).orElseThrow(PersonNotFoundException::new);
+        if (person instanceof Child) {
+            return modelMapper.map(person, ChildDto.class);
+        }
+        if (person instanceof Employee) {
+            return modelMapper.map(person, EmployeeDto.class);
+        }
         return modelMapper.map(person, PersonDto.class);
     }
 
@@ -84,5 +99,18 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public Iterable<CityPopulationDto> getCitiesPopulation() {
         return personRepository.getCitiesPopulation();
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        if (personRepository.count() == 0) {
+            Person person = new Person(1000, "John", LocalDate.of(1985, 3, 11),
+                    new Address("Tel Aviv", "Ben Gvirol", 81));
+            Child child = new Child(2000, "Peter", LocalDate.of(2019, 7, 5),
+                    new Address("Ashkelon", "Bar Kohva", 21), "Shalom");
+            Employee employee = new Employee(3000, "Mary", LocalDate.of(1995, 11, 23),
+                    new Address("Rehovor", "Ben Herzl", 7), "Microsoft", 20_000);
+            personRepository.saveAll(Arrays.asList(person, child, employee));
+        }
     }
 }
