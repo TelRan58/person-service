@@ -51,7 +51,7 @@ public class PersonController {
         return personService.findPersonsByCity(city);
     }
 
-    @GetMapping("/age/{minAge}/{maxAge}")
+    @GetMapping("/ages/{minAge}/{maxAge}")
     public PersonDto[] findPersonsBetweenAges(@PathVariable Integer minAge, @PathVariable Integer maxAge) {
         return personService.findPersonsBetweenAges(minAge, maxAge);
     }

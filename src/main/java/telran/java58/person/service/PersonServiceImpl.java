@@ -10,7 +10,11 @@ import telran.java58.person.dto.CityPopulationDto;
 import telran.java58.person.dto.PersonDto;
 import telran.java58.person.dto.exception.PersonExistsException;
 import telran.java58.person.dto.exception.PersonNotFoundException;
+import telran.java58.person.model.Address;
 import telran.java58.person.model.Person;
+
+import java.time.LocalDate;
+import java.util.Arrays;
 
 @Service
 @RequiredArgsConstructor
@@ -42,32 +46,43 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
+    @Transactional
     public PersonDto updatePersonName(Integer id, String newName) {
-        return null;
+        Person person = personRepository.findById(id).orElseThrow(PersonNotFoundException::new);
+        person.setName(newName);
+        return modelMapper.map(person, PersonDto.class);
     }
 
     @Override
+    @Transactional
     public PersonDto updatePersonAddress(Integer id, AddressDto newAddress) {
-        return null;
+        Person person = personRepository.findById(id).orElseThrow(PersonNotFoundException::new);
+        person.setAddress(modelMapper.map(newAddress, Address.class));
+        return modelMapper.map(person, PersonDto.class);
     }
 
     @Override
     public PersonDto[] findPersonsByName(String name) {
-        return new PersonDto[0];
+        return modelMapper.map(personRepository.findArrayByNameIgnoreCase(name), PersonDto[].class);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PersonDto[] findPersonsByCity(String city) {
-        return new PersonDto[0];
+        return personRepository.findStreamByAddressCityIgnoreCase(city)
+                .map(p -> modelMapper.map(p, PersonDto.class))
+                .toArray(PersonDto[]::new);
     }
 
     @Override
     public PersonDto[] findPersonsBetweenAges(Integer minAge, Integer maxAge) {
-        return new PersonDto[0];
+        LocalDate from = LocalDate.now().minusYears(maxAge);
+        LocalDate to = LocalDate.now().minusYears(minAge);
+        return modelMapper.map(personRepository.findArrayByBirthDateBetween(from, to), PersonDto[].class);
     }
 
     @Override
     public Iterable<CityPopulationDto> getCitiesPopulation() {
-        return null;
+        return personRepository.getCitiesPopulation();
     }
 }

@@ -22,6 +22,5 @@ public class Person {
     private String name;
     private LocalDate birthDate;
     @Setter
-    @Embedded
     private Address address;
 }
