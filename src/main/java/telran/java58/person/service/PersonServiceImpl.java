@@ -22,7 +22,7 @@ import java.util.Arrays;
 public class PersonServiceImpl implements PersonService, CommandLineRunner {
     private final PersonRepository personRepository;
     private final ModelMapper modelMapper;
-    final PersonModelDtoMapper mapper;
+    private final PersonModelDtoMapper mapper;
 
     @Override
     @Transactional
@@ -112,7 +112,7 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
             Child child = new Child(2000, "Peter", LocalDate.of(2019, 7, 5),
                     new Address("Ashkelon", "Bar Kohva", 21), "Shalom");
             Employee employee = new Employee(3000, "Mary", LocalDate.of(1995, 11, 23),
-                    new Address("Rehovor", "Ben Herzl", 7), "Microsoft", 20_000);
+                    new Address("Rehovot", "Ben Herzl", 7), "Microsoft", 20_000);
             personRepository.saveAll(Arrays.asList(person, child, employee));
         }
     }
